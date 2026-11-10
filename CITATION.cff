@@ -5,7 +5,7 @@ type: software
 version: "1.0.0"
 date-released: "2026-11-10"
 license: GPL-3.0-or-later
-repository-code: "https://github.com/<user>/mapf-dp-local-search"
+repository-code: "https://github.com/lucaconc/mapf-dp-local-search"
 authors:
   - family-names: Ardizzoni
     given-names: Stefano
@@ -44,3 +44,6 @@ keywords:
   - dynamic programming
   - neighborhood search
   - directed graphs
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24115533
