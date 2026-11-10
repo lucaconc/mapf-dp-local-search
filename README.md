@@ -1,6 +1,6 @@
 # Dynamic programming-based local search for MAPF
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24115533.svg)](https://doi.org/10.5281/zenodo.25115533)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24115533.svg)](https://doi.org/10.5281/zenodo.24115533)
 <!-- replace XXXXXXX with the Zenodo record after the first release (docs/RELEASING.md) -->
 
 Code and benchmark of the paper *Dynamic Programming-Based Local Search for
