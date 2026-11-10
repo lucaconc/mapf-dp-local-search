@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mapf-dp-local-search: animations</title>
+<style>
+  :root { --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --link: #0969da; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --link: #4493f8; } }
+  body { background: var(--bg); color: var(--fg); font-family: system-ui, sans-serif; max-width: 46rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  a { color: var(--link); } p.muted { color: var(--muted); }
+</style></head>
+<body>
+<h1>Dynamic programming-based local search for MAPF</h1>
+<p>Animations of plans of the benchmark: the methods side by side on the same instance, with play/pause,
+a time slider and a comparison of the arrival times of the agents (click an agent to highlight it).</p>
+<ul>
+  <li><a href="animations/rings_crossing.html">Two rings with crossing agents</a>: 20 agents on two rings
+  joined by a corridor, four of which cross to the other ring. From a serialized plan (Sum-of-Costs 2706,
+  makespan 187), MAPF-LNS reaches 801 (makespan 67) and the local search 190 (makespan 16).</li>
+  <li><a href="animations/full_rings.html">Two fully occupied rings on a directed graph</a>:
+  the initial plan rotates the rings one after the other, MAPF-LNS cannot change it (its sets of five
+  agents are smaller than a ring), and the local search rotates both rings at once
+  (Sum-of-Costs 96 &rarr; 72, makespan 6 &rarr; 4).</li>
+</ul>
+<p class="muted">Code, benchmark and results: see the repository.</p>
+</body></html>

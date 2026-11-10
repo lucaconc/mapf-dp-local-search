@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fullrings_12_12_h0_s0: initial, LNS, LS</title>
+<style>
+
+:root { --bg:#fafafa; --fg:#1d1d1f; --muted:#6b6b70; --panel:#ffffff; --line:#d9d9de;
+        --cell:#eef0f3; --wall:#3a3a40; --accent:#2f6fdb; color-scheme: light; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#141416; --fg:#ececf0; --muted:#9a9aa3; --panel:#1d1d21; --line:#34343a;
+          --cell:#2a2a30; --wall:#0c0c0e; --accent:#7aa7ff; color-scheme: dark; }
+}
+.anim * { box-sizing: border-box; }
+.anim .controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:10px 0;
+                  position: sticky; top: 0; background: var(--bg); border-bottom: 1px solid var(--line); z-index: 2; }
+.anim button, .anim select { font: inherit; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line);
+                             background: var(--panel); color: var(--fg); cursor: pointer; }
+.anim input[type=range] { flex: 1; min-width: 160px; }
+.anim .panels { display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.anim .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px; }
+.anim .panel h3 { font-size: 14px; margin: 0 0 4px; display:flex; justify-content:space-between; gap: 8px; }
+.anim .panel h3 span { color: var(--muted); font-weight: normal; }
+.anim canvas { width: 100%; display: block; border-radius: 6px; }
+.anim table { border-collapse: collapse; width: 100%; background: var(--panel); }
+.anim th, .anim td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+.anim th:first-child, .anim td:first-child { text-align: left; }
+.anim svg.chart { width: 100%; height: 220px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.anim .info { color: var(--muted); min-height: 1.4em; margin: 8px 0; }
+.anim h2 { font-size: 16px; margin: 18px 0 6px; }
+.anim .sub, .anim label { color: var(--muted); }
+.anim .wrap { overflow-x: auto; }
+
+body { margin:0; font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+       background: var(--bg); color: var(--fg); }
+main { max-width: 1400px; margin: 0 auto; padding: 12px 16px; }
+h1 { font-size: 18px; margin: 4px 0 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="title"></h1>
+  <div class="sub" id="subtitle"></div>
+  <div id="app"></div>
+</main>
+<script>
+
+function mountAnimation(root, D) {
+  const mk = (tag, attrs = {}, parent = null) => { const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) { if (k === 'text') e.textContent = v; else if (k === 'html') e.innerHTML = v; else e[k] = v; }
+    if (parent) parent.append(e); return e; };
+  root.innerHTML = ''; root.className = (root.className || '') + ' anim';
+  const M = D.methods, n = D.n;
+  const Tmax = Math.max(...M.map(m => D.plans[m].length - 1));
+  const css = getComputedStyle(document.documentElement);
+  const dark = () => matchMedia('(prefers-color-scheme: dark)').matches;
+  const col = k => `hsl(${(k * 137.508) % 360}, 68%, ${dark() ? 62 : 46}%)`;
+  // controls
+  const bar = mk('div', {className: 'controls'}, root);
+  const play = mk('button', {text: 'Play'}, bar);
+  const back = mk('button', {html: '&#9664;', title: 'previous step'}, bar);
+  const fwd = mk('button', {html: '&#9654;', title: 'next step'}, bar);
+  const slider = mk('input', {type: 'range', min: 0, step: 0.01, value: 0}, bar); slider.max = Tmax;
+  const tlabel = mk('span', {text: 't = 0'}, bar);
+  const speedL = mk('label', {text: 'speed '}, bar);
+  const speed = mk('select', {}, speedL);
+  for (const v of [0.5, 1, 2, 4, 8]) { const o = mk('option', {text: v, value: v}, speed); if (v === 1) o.selected = true; }
+  speedL.append(' steps/s');
+  const trL = mk('label', {}, bar), trails = mk('input', {type: 'checkbox', checked: true}, trL); trL.append(' trails');
+  const goL = mk('label', {}, bar), goals = mk('input', {type: 'checkbox', checked: true}, goL); goL.append(' goals');
+  const info = mk('div', {className: 'info', text: 'Click an agent to follow it in all panels.'}, root);
+  const panelsDiv = mk('div', {className: 'panels'}, root);
+  mk('h2', {text: 'Comparison'}, root);
+  mk('div', {className: 'sub', text: `Per-agent arrival times compared with ${D.ref}: agents that arrive earlier / at the same time / later.`}, root);
+  const table = mk('table', {}, mk('div', {className: 'wrap'}, root));
+  mk('h2', {text: 'Agents not yet arrived'}, root);
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg'); svg.setAttribute('class', 'chart');
+  svg.setAttribute('viewBox', '0 0 1000 220'); svg.setAttribute('preserveAspectRatio', 'none'); root.append(svg);
+
+  // geometry
+  const xs = D.xy.map(p => p[0]), ys = D.xy.map(p => p[1]);
+  const minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
+  const spanx = (maxx - minx) || 1, spany = (maxy - miny) || 1;
+  let unit = 1;
+  if (!D.grid) { const ds = D.arcs.map(([u, v]) => Math.hypot(D.xy[u][0] - D.xy[v][0], D.xy[u][1] - D.xy[v][1])).sort((a, b) => a - b);
+    unit = ds.length ? ds[Math.floor(ds.length / 2)] : 0.05; }
+  const panels = M.map(m => {
+    const div = mk('div', {className: 'panel'}, panelsDiv);
+    const h = mk('h3', {html: `<b></b><span></span>`}, div); h.firstChild.textContent = m;
+    const c = mk('canvas', {}, div);
+    return {m, c, info: h.lastChild, plan: D.plans[m], arr: D.arrivals[m]};
+  });
+  function view(c) {
+    const w = c.clientWidth || 400, pad = 0.8;
+    const sx = spanx + 2 * pad * unit, sy = spany + 2 * pad * unit;
+    const h = Math.max(120, Math.min(w * sy / sx, 640));
+    const dpr = window.devicePixelRatio || 1;
+    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
+      c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.height = h + 'px'; }
+    const s = Math.min(w / sx, h / sy);
+    return {s, ox: (w - s * sx) / 2 + s * pad * unit - s * minx, oy: (h - s * sy) / 2 + s * pad * unit - s * miny, dpr, w, h};
+  }
+  const P = (v, V) => [V.ox + V.s * D.xy[v][0], V.oy + V.s * D.xy[v][1]];
+  const at = (plan, t, k) => { const T = plan.length - 1; if (t >= T) return [plan[T][k], plan[T][k], 0];
+    const i = Math.floor(t); return [plan[i][k], plan[i + 1][k], t - i]; };
+  let t = 0, playing = false, selected = -1, last = null, alive = true;
+  function drawPanel(p) {
+    const V = view(p.c), g = p.c.getContext('2d');
+    g.setTransform(V.dpr, 0, 0, V.dpr, 0, 0); g.clearRect(0, 0, V.w, V.h);
+    const cs = V.s * unit;
+    if (D.grid) {
+      g.fillStyle = css.getPropertyValue('--wall');
+      g.fillRect(V.ox + V.s * (minx - 0.5), V.oy + V.s * (miny - 0.5), V.s * (spanx + 1), V.s * (spany + 1));
+      g.fillStyle = css.getPropertyValue('--cell');
+      for (let v = 0; v < D.xy.length; v++) { const [x, y] = P(v, V); g.fillRect(x - cs / 2 + 0.5, y - cs / 2 + 0.5, cs - 1, cs - 1); }
+    }
+    g.strokeStyle = css.getPropertyValue('--line'); g.lineWidth = 1;
+    for (const [u, v, oneway] of D.arcs) {
+      if (D.grid && !oneway) continue;
+      const [x1, y1] = P(u, V), [x2, y2] = P(v, V);
+      g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke();
+      if (oneway) { const a = Math.atan2(y2 - y1, x2 - x1), mx = (x1 + x2) / 2, my = (y1 + y2) / 2, r = Math.max(3, cs * 0.16);
+        g.beginPath(); g.moveTo(mx + r * Math.cos(a), my + r * Math.sin(a));
+        g.lineTo(mx + r * Math.cos(a + 2.5), my + r * Math.sin(a + 2.5));
+        g.lineTo(mx + r * Math.cos(a - 2.5), my + r * Math.sin(a - 2.5)); g.closePath();
+        g.fillStyle = css.getPropertyValue('--line'); g.fill(); }
+    }
+    if (!D.grid) { g.fillStyle = css.getPropertyValue('--cell');
+      for (let v = 0; v < D.xy.length; v++) { const [x, y] = P(v, V); g.beginPath(); g.arc(x, y, cs * 0.3, 0, 7); g.fill(); } }
+    const r = Math.max(2.5, cs * 0.36);
+    if (goals.checked) for (let k = 0; k < n; k++) { const [x, y] = P(D.goals[k], V);
+      g.strokeStyle = col(k); g.lineWidth = Math.max(1, r * 0.25); g.strokeRect(x - r * 0.6, y - r * 0.6, r * 1.2, r * 1.2); }
+    if (trails.checked) for (let k = 0; k < n; k++) {
+      g.strokeStyle = col(k); g.globalAlpha = 0.35; g.lineWidth = Math.max(1, r * 0.35); g.beginPath();
+      const t0 = Math.max(0, Math.floor(t) - 6);
+      for (let s = t0; s <= Math.min(Math.floor(t), p.plan.length - 1); s++) { const [x, y] = P(p.plan[s][k], V); s === t0 ? g.moveTo(x, y) : g.lineTo(x, y); }
+      const [a, b, f] = at(p.plan, t, k), [xa, ya] = P(a, V), [xb, yb] = P(b, V);
+      g.lineTo(xa + (xb - xa) * f, ya + (yb - ya) * f); g.stroke(); g.globalAlpha = 1;
+    }
+    let arrived = 0;
+    for (let k = 0; k < n; k++) {
+      const [a, b, f] = at(p.plan, t, k), [xa, ya] = P(a, V), [xb, yb] = P(b, V);
+      const x = xa + (xb - xa) * f, y = ya + (yb - ya) * f, done = t >= p.arr[k];
+      if (done) arrived++;
+      g.globalAlpha = (selected >= 0 && selected !== k) ? 0.25 : (done ? 0.55 : 1);
+      g.fillStyle = col(k); g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); g.globalAlpha = 1;
+      if (k === selected) { g.strokeStyle = css.getPropertyValue('--fg'); g.lineWidth = 2.5; g.beginPath(); g.arc(x, y, r + 3, 0, 7); g.stroke(); }
+    }
+    p.info.textContent = `SoC ${p.arr.reduce((a, b) => a + b, 0)} · makespan ${p.plan.length - 1} · arrived ${arrived}/${n}`;
+  }
+  let cursor = null;
+  function draw() { if (!alive) return; panels.forEach(drawPanel);
+    if (cursor) { cursor.setAttribute('x1', X(t)); cursor.setAttribute('x2', X(t)); }
+    slider.value = t; tlabel.textContent = `t = ${t.toFixed(1)} / ${Tmax}`; }
+  slider.oninput = () => { t = +slider.value; draw(); };
+  play.onclick = () => { playing = !playing; if (t >= Tmax) t = 0; play.textContent = playing ? 'Pause' : 'Play'; last = null;
+    if (playing) requestAnimationFrame(tick); };
+  back.onclick = () => { t = Math.max(0, Math.ceil(t) - 1); draw(); };
+  fwd.onclick = () => { t = Math.min(Tmax, Math.floor(t) + 1); draw(); };
+  trails.onchange = draw; goals.onchange = draw;
+  function tick(now) {
+    if (!playing || !alive) return;
+    if (last !== null) t = Math.min(Tmax, t + (now - last) / 1000 * +speed.value);
+    last = now; draw();
+    if (t >= Tmax) { playing = false; play.textContent = 'Play'; return; }
+    requestAnimationFrame(tick);
+  }
+  panels.forEach(p => p.c.addEventListener('click', ev => {
+    const V = view(p.c), rect = p.c.getBoundingClientRect(), mx = ev.clientX - rect.left, my = ev.clientY - rect.top;
+    let best = -1, bd = 1e9;
+    for (let k = 0; k < n; k++) { const [a, b, f] = at(p.plan, t, k), [xa, ya] = P(a, V), [xb, yb] = P(b, V);
+      const d = Math.hypot(xa + (xb - xa) * f - mx, ya + (yb - ya) * f - my); if (d < bd) { bd = d; best = k; } }
+    selected = (bd < V.s * unit) && best !== selected ? best : -1;
+    info.textContent = selected < 0 ? 'Click an agent to follow it in all panels.' :
+      `Agent ${selected}: arrival ` + M.map(m => `${m} ${D.arrivals[m][selected]}`).join(' · ');
+    draw();
+  }));
+  const onResize = () => draw(); window.addEventListener('resize', onResize);
+  // comparison table
+  const refSoc = D.rows.find(x => x.method === D.ref).soc;
+  table.innerHTML = '<tr><th>method</th><th>Sum-of-Costs</th><th>makespan</th><th>earlier</th><th>same</th><th>later</th><th>SoC vs ref.</th></tr>' +
+    D.rows.map(r => `<tr><td></td><td>${r.soc}</td><td>${r.makespan}</td><td>${r.better}</td><td>${r.equal}</td><td>${r.worse}</td>` +
+      `<td>${r.method === D.ref ? 'ref.' : ((r.soc - refSoc) / refSoc * 100).toFixed(1) + '%'}</td></tr>`).join('');
+  [...table.querySelectorAll ? table.querySelectorAll('tr') : []].slice(1).forEach((tr, i) => { tr.firstChild.textContent = D.rows[i].method; });
+  // chart
+  const W = 1000, H = 220, L = 40, B = 24;
+  const X = s => L + (W - L - 8) * s / Math.max(Tmax, 1), Y = v => 8 + (H - B - 8) * (1 - v / n);
+  const pal = ['#2f6fdb', '#e0533d', '#2a9d5b', '#b25fd6', '#d39a1d', '#1aa3b5', '#7a7a80', '#c2185b'];
+  let sv = `<line x1="${L}" y1="${H - B}" x2="${W - 8}" y2="${H - B}" stroke="var(--line)"/>` +
+    `<text x="${L - 6}" y="${Y(n) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${n}</text>` +
+    `<text x="${L - 6}" y="${Y(0) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">0</text>` +
+    `<text x="${W - 8}" y="${H - 6}" text-anchor="end" font-size="11" fill="var(--muted)">t = ${Tmax}</text>`;
+  M.forEach((m, i) => { const pts = [];
+    for (let s = 0; s <= Tmax; s++) pts.push(`${X(s).toFixed(1)},${Y(D.arrivals[m].filter(a => a > s).length).toFixed(1)}`);
+    sv += `<polyline fill="none" stroke="${pal[i % pal.length]}" stroke-width="2" points="${pts.join(' ')}"/>` +
+          `<text x="${L + 8 + i * 160}" y="20" font-size="12" fill="${pal[i % pal.length]}">&#9632; ${m.replace(/[<>&]/g, '')}</text>`; });
+  sv += `<line class="cursor" y1="8" y2="${H - B}" stroke="var(--fg)" stroke-dasharray="3 3"/>`;
+  svg.innerHTML = sv; cursor = svg.querySelector ? svg.querySelector('.cursor') : null;
+  draw();
+  return {stop() { alive = false; playing = false; window.removeEventListener('resize', onResize); }};
+}
+
+const D = {"name":"fullrings_12_12_h0_s0","n":24,"grid":false,"xy":[[0.1231,0.3451],[0.1693,0.2826],[0.2055,0.217],[0.2285,0.1496],[0.2331,0.0848],[0.2139,0.0288],[0.169,0.0],[0.1182,0.0154],[0.0846,0.0644],[0.0718,0.1284],[0.0763,0.1994],[0.0943,0.2723],[0.1021,0.649],[0.1432,0.7159],[0.1739,0.7849],[0.1914,0.8544],[0.1909,0.9198],[0.1675,0.9744],[0.1207,1.0],[0.0711,0.9809],[0.0417,0.9292],[0.0343,0.864],[0.0445,0.7931],[0.0682,0.7211],[0.1103,0.445],[0.0961,0.5463],[0.0442,0.5402],[0.0,0.5361]],"arcs":[[0,1,1],[0,24,0],[1,2,1],[2,3,1],[3,4,1],[4,5,1],[5,6,1],[6,7,1],[7,8,1],[8,9,1],[9,10,1],[10,11,1],[11,0,1],[12,13,1],[12,25,0],[13,14,1],[14,15,1],[15,16,1],[16,17,1],[17,18,1],[18,19,1],[19,20,1],[20,21,1],[21,22,1],[22,23,1],[23,12,1],[24,25,0],[25,26,0],[26,27,0]],"starts":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],"goals":[2,3,4,5,6,7,8,9,10,11,0,1,16,17,18,19,20,21,22,23,12,13,14,15],"methods":["initial","LNS","LS"],"plans":{"initial":[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],[1,2,3,4,5,6,7,8,9,10,11,0,12,13,14,15,16,17,18,19,20,21,22,23],[2,3,4,5,6,7,8,9,10,11,0,1,12,13,14,15,16,17,18,19,20,21,22,23],[2,3,4,5,6,7,8,9,10,11,0,1,13,14,15,16,17,18,19,20,21,22,23,12],[2,3,4,5,6,7,8,9,10,11,0,1,14,15,16,17,18,19,20,21,22,23,12,13],[2,3,4,5,6,7,8,9,10,11,0,1,15,16,17,18,19,20,21,22,23,12,13,14],[2,3,4,5,6,7,8,9,10,11,0,1,16,17,18,19,20,21,22,23,12,13,14,15]],"LNS":[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],[1,2,3,4,5,6,7,8,9,10,11,0,12,13,14,15,16,17,18,19,20,21,22,23],[2,3,4,5,6,7,8,9,10,11,0,1,12,13,14,15,16,17,18,19,20,21,22,23],[2,3,4,5,6,7,8,9,10,11,0,1,13,14,15,16,17,18,19,20,21,22,23,12],[2,3,4,5,6,7,8,9,10,11,0,1,14,15,16,17,18,19,20,21,22,23,12,13],[2,3,4,5,6,7,8,9,10,11,0,1,15,16,17,18,19,20,21,22,23,12,13,14],[2,3,4,5,6,7,8,9,10,11,0,1,16,17,18,19,20,21,22,23,12,13,14,15]],"LS":[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],[1,2,3,4,5,6,7,8,9,10,11,0,13,14,15,16,17,18,19,20,21,22,23,12],[2,3,4,5,6,7,8,9,10,11,0,1,14,15,16,17,18,19,20,21,22,23,12,13],[2,3,4,5,6,7,8,9,10,11,0,1,15,16,17,18,19,20,21,22,23,12,13,14],[2,3,4,5,6,7,8,9,10,11,0,1,16,17,18,19,20,21,22,23,12,13,14,15]]},"arrivals":{"initial":[2,2,2,2,2,2,2,2,2,2,2,2,6,6,6,6,6,6,6,6,6,6,6,6],"LNS":[2,2,2,2,2,2,2,2,2,2,2,2,6,6,6,6,6,6,6,6,6,6,6,6],"LS":[2,2,2,2,2,2,2,2,2,2,2,2,4,4,4,4,4,4,4,4,4,4,4,4]},"ref":"initial","rows":[{"method":"initial","soc":96,"makespan":6,"better":0,"equal":24,"worse":0},{"method":"LNS","soc":96,"makespan":6,"better":0,"equal":24,"worse":0},{"method":"LS","soc":72,"makespan":4,"better":12,"equal":12,"worse":0}]};
+document.getElementById('title').textContent = D.name;
+document.getElementById('subtitle').textContent =
+  `${D.n} agents, ${D.xy.length} nodes, ${D.grid ? 'grid' : 'graph'}; methods: ${D.methods.join(', ')}`;
+mountAnimation(document.getElementById('app'), D);
+</script>
+</body>
+</html>

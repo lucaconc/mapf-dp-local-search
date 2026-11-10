@@ -32,6 +32,18 @@ keywords, description); `CITATION.cff` gives the citation shown by GitHub.
 
    Commit these changes; they will be in the next release.
 
+## Animations on GitHub Pages
+
+The GIF in the README is shown by GitHub directly. The interactive animations
+(`docs/animations/*.html`) are published by GitHub Pages: in the repository,
+*Settings* -> *Pages* -> *Build and deployment*: source *Deploy from a branch*,
+branch `main`, folder `/docs`. After a minute the site is at
+`https://<user>.github.io/mapf-dp-local-search/` (`docs/index.html`), and every
+page of `docs/animations/` at `.../animations/<name>.html`. To add an
+animation, generate it with `mapf_bench.visualize --out docs/animations/<name>.html`
+(and `--gif` for a preview in the README), link it from `docs/index.html`, and
+push. `docs/.nojekyll` makes Pages serve the files as they are.
+
 ## Later releases
 
 Update `__version__` in `mapf_bench/__init__.py`, `version` and
