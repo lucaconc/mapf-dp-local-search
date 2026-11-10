@@ -1,0 +1,9 @@
+{
+  "name": "smoke",
+  "description": "Quick check of the installation: 6 small instances, 5 s per method (a few minutes).",
+  "time": 5,
+  "methods": ["LNS", "LaCAM*", "LS", "Hybrid", "LNS+LS", "LaCAM*+Hybrid"],
+  "suites": [
+    {"type": "paper", "groups": ["S", "D", "W"], "indices": [0, 5, 15, 20, 95, 96]}
+  ]
+}

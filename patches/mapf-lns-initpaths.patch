@@ -1,0 +1,142 @@
+diff --git a/inc/LNS.h b/inc/LNS.h
+index 0660716..643631e 100644
+--- a/inc/LNS.h
++++ b/inc/LNS.h
+@@ -62,6 +62,9 @@ public:
+ 
+     bool getInitialSolution();
+     bool run();
++    string init_paths_file; // used when init_algo_name == "File"
++    int stagnation = 0;     // stop after this many iterations without improvement (0: never)
++    bool loadInitialPaths();
+     void validateSolution() const;
+     void writeIterStatsToFile(string file_name) const;
+     void writeResultToFile(string file_name) const;
+diff --git a/src/LNS.cpp b/src/LNS.cpp
+index 543cf34..93c7492 100644
+--- a/src/LNS.cpp
++++ b/src/LNS.cpp
+@@ -1,4 +1,6 @@
+ #include "LNS.h"
++#include <sstream>
++#include <fstream>
+ #include <queue>
+ 
+ LNS::LNS(const Instance& instance, double time_limit, string init_algo_name, string replan_algo_name, string destory_name,
+@@ -69,8 +71,12 @@ bool LNS::run()
+         return false; // terminate because no initial solution is found
+     }
+ 
++    long long last_soc = sum_of_costs; size_t last_improvement = iteration_stats.size();
+     while (runtime < time_limit && iteration_stats.size() <= num_of_iterations)
+     {
++        // stop after `stagnation` consecutive iterations without improvement
++        if (stagnation > 0 && iteration_stats.size() - last_improvement > (size_t)stagnation) break;
++        if (sum_of_costs < last_soc) { last_soc = sum_of_costs; last_improvement = iteration_stats.size(); }
+         runtime =((fsec)(Time::now() - start_time)).count();
+         if(screen >= 1)
+             validateSolution();
+@@ -182,6 +188,8 @@ bool LNS::getInitialSolution()
+         succ = runWinPIBT();
+     else if (init_algo_name == "CBS")
+         succ = runCBS();
++    else if (init_algo_name == "File")
++        succ = loadInitialPaths();
+     else
+     {
+         cerr <<  "Initial MAPF solver " << init_algo_name << " does not exist!" << endl;
+@@ -200,6 +208,49 @@ bool LNS::getInitialSolution()
+ 
+ }
+ 
++// Load an initial solution written in the format of writePathsToFile:
++// first line the number of agents, then one line per agent with the
++// comma-separated locations of its path (until its arrival at the goal).
++bool LNS::loadInitialPaths()
++{
++    std::ifstream in(init_paths_file);
++    if (!in.is_open())
++    {
++        cerr << "Cannot open initial paths file " << init_paths_file << endl;
++        return false;
++    }
++    int n;
++    string line;
++    getline(in, line);
++    n = std::stoi(line);
++    if (n != (int)agents.size())
++    {
++        cerr << "Initial paths file has " << n << " agents, expected " << agents.size() << endl;
++        exit(-1);
++    }
++    neighbor.sum_of_costs = 0;
++    for (int i = 0; i < n; i++)
++    {
++        getline(in, line);
++        agents[i].path.clear();
++        std::stringstream ss(line);
++        string tok;
++        while (getline(ss, tok, ','))
++            if (!tok.empty())
++                agents[i].path.emplace_back(std::stoi(tok));
++        if (agents[i].path.empty() ||
++            agents[i].path.front().location != agents[i].path_planner.start_location ||
++            agents[i].path.back().location != agents[i].path_planner.goal_location)
++        {
++            cerr << "Initial path of agent " << i << " does not connect its start and goal" << endl;
++            exit(-1);
++        }
++        path_table.insertPath(agents[i].id, agents[i].path);
++        neighbor.sum_of_costs += (int)agents[i].path.size() - 1;
++    }
++    return true;
++}
++
+ bool LNS::runEECBS()
+ {
+     vector<SingleAgentSolver*> search_engines;
+diff --git a/src/driver.cpp b/src/driver.cpp
+index 6a76c6d..88d77de 100644
+--- a/src/driver.cpp
++++ b/src/driver.cpp
+@@ -41,6 +41,11 @@ int main(int argc, char** argv)
+              "window size for winPIBT")
+         ("winPibtSoftmode", po::value<bool>()->default_value(true),
+              "winPIBT soft mode")
++        // added for the comparison with the DP-based local search
++        ("initPaths", po::value<string>(), "initial paths file (with --initAlgo File)")
++        ("outputPaths", po::value<string>(), "write the final paths to this file")
++        ("seed", po::value<int>()->default_value(0), "random seed")
++        ("stagnation", po::value<int>()->default_value(0), "stop after this many iterations without improvement (0: never)")
+ 		;
+ 	po::variables_map vm;
+ 	po::store(po::parse_command_line(argc, argv, desc), vm);
+@@ -62,7 +67,7 @@ int main(int argc, char** argv)
+ 		vm["agentNum"].as<int>());
+     double time_limit = vm["cutoffTime"].as<double>();
+     int screen = vm["screen"].as<int>();
+-	srand(0);
++	srand(vm["seed"].as<int>());
+ 
+ 	if (vm["solver"].as<string>() == "LNS")
+     {
+@@ -72,6 +77,9 @@ int main(int argc, char** argv)
+                 vm["destoryStrategy"].as<string>(),
+                 vm["neighborSize"].as<int>(),
+                 vm["maxIterations"].as<int>(), screen, pipp_option);
++        if (vm.count("initPaths"))
++            lns.init_paths_file = vm["initPaths"].as<string>();
++        lns.stagnation = vm["stagnation"].as<int>();
+         bool succ = lns.run();
+         if (succ)
+             lns.validateSolution();
+@@ -79,7 +87,8 @@ int main(int argc, char** argv)
+             lns.writeResultToFile(vm["output"].as<string>());
+         if (vm.count("stats"))
+             lns.writeIterStatsToFile(vm["stats"].as<string>());
+-        // lns.writePathsToFile("path.txt");
++        if (succ && vm.count("outputPaths"))
++            lns.writePathsToFile(vm["outputPaths"].as<string>());
+     }
+     else if (vm["solver"].as<string>() == "A-BCBS") // anytime BCBS(w, 1)
+     {

@@ -1,0 +1,9 @@
+{
+ "cpu": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+ "cores": 1,
+ "memory_gb": 3.9,
+ "system": "Linux",
+ "python": "3.12.3",
+ "workers": 1,
+ "pinned": false
+}

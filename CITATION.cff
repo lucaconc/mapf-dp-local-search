@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the paper below, and the archived release (DOI on Zenodo) for the version used."
+title: "Dynamic programming-based local search for MAPF: code and benchmark"
+type: software
+version: "1.0.0"
+date-released: "2026-11-10"
+license: GPL-3.0-or-later
+repository-code: "https://github.com/<user>/mapf-dp-local-search"
+authors:
+  - family-names: Ardizzoni
+    given-names: Stefano
+    affiliation: "Dipartimento di Ingegneria e Architettura, Università di Parma"
+  - family-names: Consolini
+    given-names: Luca
+    affiliation: "Dipartimento di Ingegneria e Architettura, Università di Parma"
+  - family-names: Locatelli
+    given-names: Marco
+    affiliation: "Dipartimento di Ingegneria e Architettura, Università di Parma"
+  - family-names: Saccani
+    given-names: Irene
+    affiliation: "Dipartimento di Ingegneria e Architettura, Università di Parma"
+preferred-citation:
+  type: article
+  title: "Dynamic Programming-Based Local Search for MAPF on Directed Graphs"
+  authors:
+    - family-names: Ardizzoni
+      given-names: Stefano
+    - family-names: Consolini
+      given-names: Luca
+    - family-names: Locatelli
+      given-names: Marco
+    - family-names: Saccani
+      given-names: Irene
+  status: submitted
+abstract: >-
+  Code and benchmark of a local search for multi-agent path finding that
+  improves a feasible plan by searching exactly, by dynamic programming on a
+  sequentialized automaton, the best plan within a neighborhood of it, with
+  incomplete searches of larger neighborhoods and combinations with MAPF-LNS
+  and LaCAM*.
+keywords:
+  - multi-agent path finding
+  - local search
+  - dynamic programming
+  - neighborhood search
+  - directed graphs

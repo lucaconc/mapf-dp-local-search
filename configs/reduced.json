@@ -1,0 +1,26 @@
+{
+  "name": "reduced",
+  "description": "Group L of the paper protocol: the MovingAI instances of group M (20, 40 and 100 agents) on maps with 0, 50, 75 and 100% of the blockable cells blocked, the map staying connected: 96 instances, eleven methods, 20 s each.",
+  "time": 20,
+  "methods": [
+    "LNS",
+    "LaCAM*",
+    "LS",
+    "Hybrid",
+    "LNS+LS",
+    "LaCAM*+Hybrid",
+    "LaCAM*+LNS",
+    "LSB",
+    "LNS+LSB",
+    "LaCAM*+LNS+LSB",
+    "LSBX"
+  ],
+  "suites": [
+    {
+      "type": "paper",
+      "groups": [
+        "L"
+      ]
+    }
+  ]
+}

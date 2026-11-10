@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# build outputs and external code
+cpp/dpls
+cpp/dpls_*
+third_party/
+build/
+
+# results and generated data
+results/
+paper_update/
+bench_cpp/
+benchmarks/movingai/reduced/
+benchmarks/deadlock/
+benchmarks/corridors/
+*.plans.xz
+*.json.gz
+*.log
+job_*.jsonl
+
+# LaTeX and OS files
+*.aux
+*.out
+*.synctex.gz
+.DS_Store

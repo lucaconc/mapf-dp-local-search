@@ -1,0 +1,26 @@
+{
+  "name": "deadlock",
+  "description": "Group K of the paper protocol: 40 deadlock-prone instances (corridor swaps, dead-end filling, order reversal, crossroads), eleven methods, 20 s each.",
+  "time": 20,
+  "methods": [
+    "LNS",
+    "LaCAM*",
+    "LS",
+    "Hybrid",
+    "LNS+LS",
+    "LaCAM*+Hybrid",
+    "LaCAM*+LNS",
+    "LSB",
+    "LNS+LSB",
+    "LaCAM*+LNS+LSB",
+    "LSBX"
+  ],
+  "suites": [
+    {
+      "type": "paper",
+      "groups": [
+        "K"
+      ]
+    }
+  ]
+}

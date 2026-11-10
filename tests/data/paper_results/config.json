@@ -1,0 +1,12 @@
+{
+ "name": "paper",
+ "time": 20,
+ "methods": [
+  "LNS",
+  "LaCAM*",
+  "LS",
+  "Hybrid",
+  "LNS+LS",
+  "LaCAM*+Hybrid"
+ ]
+}

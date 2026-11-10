@@ -1,0 +1,26 @@
+{
+  "name": "corridors",
+  "description": "Group C of the paper protocol: 72 grids with many width-1 corridors (warehouse, city blocks, braided maze) at 50-98% occupancy, eleven methods, 20 s each.",
+  "time": 20,
+  "methods": [
+    "LNS",
+    "LaCAM*",
+    "LS",
+    "Hybrid",
+    "LNS+LS",
+    "LaCAM*+Hybrid",
+    "LaCAM*+LNS",
+    "LSB",
+    "LNS+LSB",
+    "LaCAM*+LNS+LSB",
+    "LSBX"
+  ],
+  "suites": [
+    {
+      "type": "paper",
+      "groups": [
+        "C"
+      ]
+    }
+  ]
+}

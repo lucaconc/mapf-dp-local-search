@@ -1,0 +1,26 @@
+{
+  "name": "pibt",
+  "description": "Group P of the paper protocol: the instances of groups M, H, W, L, K with PIBT initial plans (where PIBT reaches all the goals); the LaCAM*-based methods are not run (they do not depend on the initial plan).",
+  "time": 20,
+  "methods": [
+    "LNS",
+    "LaCAM*",
+    "LS",
+    "Hybrid",
+    "LNS+LS",
+    "LaCAM*+Hybrid",
+    "LaCAM*+LNS",
+    "LSB",
+    "LNS+LSB",
+    "LaCAM*+LNS+LSB",
+    "LSBX"
+  ],
+  "suites": [
+    {
+      "type": "paper",
+      "groups": [
+        "P"
+      ]
+    }
+  ]
+}

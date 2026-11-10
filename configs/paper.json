@@ -1,0 +1,34 @@
+{
+  "name": "paper",
+  "description": "Protocol of the paper (Section 5.4): 509 instances in nine groups (group P: PIBT initial plans), eleven methods, 20 s each.",
+  "time": 20,
+  "methods": [
+    "LNS",
+    "LaCAM*",
+    "LS",
+    "Hybrid",
+    "LNS+LS",
+    "LaCAM*+Hybrid",
+    "LaCAM*+LNS",
+    "LSB",
+    "LNS+LSB",
+    "LaCAM*+LNS+LSB",
+    "LSBX"
+  ],
+  "suites": [
+    {
+      "type": "paper",
+      "groups": [
+        "S",
+        "D",
+        "M",
+        "H",
+        "W",
+        "L",
+        "K",
+        "C",
+        "P"
+      ]
+    }
+  ]
+}

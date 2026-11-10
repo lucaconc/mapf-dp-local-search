@@ -1,0 +1,45 @@
+{
+  "name": "numerical_check",
+  "description": "Numerical check of an installation: one instance per group (S, D, M, H, W, L, K, C, P), all the default methods, 5 s per method (about 6 minutes with one worker).",
+  "time": 5,
+  "methods": [
+    "LNS",
+    "LaCAM*",
+    "LS",
+    "Hybrid",
+    "LNS+LS",
+    "LaCAM*+Hybrid",
+    "LaCAM*+LNS",
+    "LSB",
+    "LNS+LSB",
+    "LaCAM*+LNS+LSB",
+    "LSBX"
+  ],
+  "suites": [
+    {
+      "type": "paper",
+      "groups": [
+        "S",
+        "D",
+        "M",
+        "H",
+        "W",
+        "L",
+        "K",
+        "C",
+        "P"
+      ],
+      "indices": [
+        5,
+        30,
+        41,
+        62,
+        95,
+        162,
+        224,
+        240,
+        368
+      ]
+    }
+  ]
+}
