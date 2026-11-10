@@ -15,3 +15,5 @@ for Multi-Agent Path Finding on Directed Graphs*.
   groups), parallel runner, statistics, performance profiles, automatic update
   of the paper's tables and numbers with a check of its claims.
 - Results of the run reported in the paper (`paper_results/`).
+- The code was generated with Claude (Anthropic) under the direction of the
+  authors (see "Use of AI tools" in the README).

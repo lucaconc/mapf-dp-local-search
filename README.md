@@ -129,6 +129,17 @@ scripts into `third_party/`; they are not part of this repository and keep
 their own licenses. The MovingAI maps are from the MovingAI MAPF benchmark
 (N. Sturtevant; R. Stern et al.), see `benchmarks/movingai/README.md`.
 
+## Use of AI tools
+
+The code of this repository (the C++ local search, the Python package, the
+benchmark protocol, the scripts and the tests) was generated with Claude, an AI
+assistant developed by Anthropic, under the direction of the authors, who
+designed the method and the experiments, reviewed the code, and are responsible
+for it. Its correctness is checked by the test suite and, in every experiment,
+by validating every returned plan (no collisions, every agent at its goal);
+the claims of the paper are checked automatically against the results
+(`paper_results/claims_report.md`).
+
 ## Citing
 
 If you use this code, please cite the paper and the archived release on Zenodo

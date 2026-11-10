@@ -2,15 +2,38 @@
   "title": "mapf-dp-local-search: dynamic programming-based local search for multi-agent path finding",
   "upload_type": "software",
   "version": "1.0.0",
-  "description": "<p>Code and benchmark of the paper <i>Dynamic Programming-Based Local Search for Multi-Agent Path Finding on Directed Graphs</i>.</p><p>The local search improves a feasible multi-agent plan by searching exactly, by dynamic programming on a sequentialized automaton, the best plan within a neighborhood of it (route-lag, agent and free-set distances, order-based retiming and swaps), combined by a variable neighborhood descent, with incomplete searches of larger neighborhoods followed by an exact descent, and with MAPF-LNS and LaCAM*. The repository contains the local search in C++, a Python package with instance generators, the compared methods, a parallel benchmark runner, statistical analysis and an automatic update of the paper's tables, the benchmark protocol of the paper, the results of the run reported in the paper, and the tests.</p><p>LaCAM3 and MAPF-LNS are not included: the build scripts download them, and they keep their own licenses. The patch of MAPF-LNS in patches/ is distributed under the MAPF-LNS license (University of Southern California).</p>",
+  "description": "<p>Code and benchmark of the paper <i>Dynamic Programming-Based Local Search for Multi-Agent Path Finding on Directed Graphs</i>.</p><p>The local search improves a feasible multi-agent plan by searching exactly, by dynamic programming on a sequentialized automaton, the best plan within a neighborhood of it (route-lag, agent and free-set distances, order-based retiming and swaps), combined by a variable neighborhood descent, with incomplete searches of larger neighborhoods followed by an exact descent, and with MAPF-LNS and LaCAM*. The repository contains the local search in C++, a Python package with instance generators, the compared methods, a parallel benchmark runner, statistical analysis and an automatic update of the paper's tables, the benchmark protocol of the paper, the results of the run reported in the paper, and the tests.</p><p>LaCAM3 and MAPF-LNS are not included: the build scripts download them, and they keep their own licenses. The patch of MAPF-LNS in patches/ is distributed under the MAPF-LNS license (University of Southern California).</p><p>The code was generated with Claude, an AI assistant developed by Anthropic, under the direction of the authors, who designed the method and the experiments, reviewed the code and are responsible for it; its correctness is checked by the test suite and by the validation of every returned plan.</p>",
   "creators": [
-    {"name": "Ardizzoni, Stefano", "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"},
-    {"name": "Consolini, Luca", "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"},
-    {"name": "Locatelli, Marco", "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"},
-    {"name": "Saccani, Irene", "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"}
+    {
+      "name": "Ardizzoni, Stefano",
+      "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"
+    },
+    {
+      "name": "Consolini, Luca",
+      "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"
+    },
+    {
+      "name": "Locatelli, Marco",
+      "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"
+    },
+    {
+      "name": "Saccani, Irene",
+      "affiliation": "Dipartimento di Ingegneria e Architettura, Università di Parma"
+    }
   ],
   "license": "GPL-3.0-or-later",
-  "keywords": ["multi-agent path finding", "MAPF", "local search", "dynamic programming", "neighborhood search", "directed graphs", "MAPF-LNS", "LaCAM", "benchmark"],
+  "keywords": [
+    "multi-agent path finding",
+    "MAPF",
+    "local search",
+    "dynamic programming",
+    "neighborhood search",
+    "directed graphs",
+    "MAPF-LNS",
+    "LaCAM",
+    "benchmark"
+  ],
   "access_right": "open",
-  "language": "eng"
+  "language": "eng",
+  "notes": "The code was generated with Claude (Anthropic) under the direction of the authors; see the section Use of AI tools of the README."
 }
